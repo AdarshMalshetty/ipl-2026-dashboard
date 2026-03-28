@@ -26,7 +26,7 @@ stages:
   - job: Deploy
     displayName: 'Deploy IPL Dashboard'
     pool:
-      vmImage: 'ubuntu-latest'
+      name: 'local-mac'
 
     steps:
     - checkout: self
