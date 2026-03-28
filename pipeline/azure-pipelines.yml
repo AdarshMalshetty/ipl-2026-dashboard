@@ -29,12 +29,11 @@ stages:
       displayName: 'Install SWA CLI'
 
     - script: |
-        cd ..
         swa deploy \
           --deployment-token $(azureStaticWebAppsApiToken) \
           --env production \
-          --app-location ipl-2026-dashboard \
-          --output-location ipl-2026-dashboard
+          --app-location . \
+          --output-location .
       displayName: 'Deploy to Azure Static Web Apps'
 
     - script: |
