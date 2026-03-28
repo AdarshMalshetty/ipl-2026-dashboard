@@ -12,12 +12,6 @@ pr:
     include:
       - main
 
-variables:
-  # Set this in Azure DevOps pipeline variables (mark as secret)
-  # Name: azureStaticWebAppsApiToken
-  appLocation: '/'       # Root of the repo
-  outputLocation: '/'    # Static files are at root (index.html)
-
 stages:
 
 - stage: Build_And_Deploy
@@ -31,12 +25,14 @@ stages:
     steps:
     - checkout: self
 
-    - task: AzureStaticWebApp@0
+    - script: npm install -g @azure/static-web-apps-cli
+      displayName: 'Install SWA CLI'
+
+    - script: |
+        swa deploy ./ \
+          --deployment-token $(azureStaticWebAppsApiToken) \
+          --env production
       displayName: 'Deploy to Azure Static Web Apps'
-      inputs:
-        app_location: $(appLocation)
-        output_location: $(outputLocation)
-        azure_static_web_apps_api_token: $(azureStaticWebAppsApiToken)
 
     - script: |
         echo "========================================="
