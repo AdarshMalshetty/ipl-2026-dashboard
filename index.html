@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPL 2026 Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --card: #1a1a24;
+      --border: rgba(255,255,255,0.07);
+      --text: #f0f0f5;
+      --muted: #7a7a9a;
+      --accent: #4f8ef7;
+      --gold: #f5c842;
+      --green: #3ecf8e;
+      --red: #f26b6b;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #f5c842, #f07830);
+      color: #000;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .live-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(62,207,142,0.12);
+      border: 1px solid rgba(62,207,142,0.25);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      background: var(--surface);
+      padding: 4px;
+      border-radius: 10px;
+      width: fit-content;
+    }
+
+    .tab {
+      padding: 7px 18px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      transition: all .15s;
+    }
+
+    .tab.active {
+      background: var(--card);
+      color: var(--text);
+    }
+
+    /* ── Section labels ── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Points Table ── */
+    .table-wrap {
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: var(--surface);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    thead th:not(:first-child) { text-align: center; }
+
+    tbody tr {
+      border-top: 1px solid var(--border);
+      transition: background .12s;
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    tbody tr.qualifier { border-left: 3px solid var(--accent); }
+
+    td {
+      padding: 11px 14px;
+      vertical-align: middle;
+    }
+
+    td:not(:first-child) { text-align: center; }
+
+    .team-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .team-icon {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .team-name { font-weight: 500; }
+    .team-short { color: var(--muted); font-size: 12px; }
+
+    .pos {
+      width: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nrr-pos { color: var(--green); }
+    .nrr-neg { color: var(--red); }
+    .pts-bold { font-weight: 700; color: var(--text); }
+
+    .qualifier-badge {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(79,142,247,0.12);
+      border-radius: 3px;
+      padding: 1px 5px;
+      margin-left: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Fixtures ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .match-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+
+    .match-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .match-num {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .match-date {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .match-teams {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .match-team {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .match-team.right {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+
+    .vs-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      background: var(--surface);
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .match-venue {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .result-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .result-badge.won {
+      background: rgba(62,207,142,0.12);
+      color: var(--green);
+    }
+
+    .result-badge.upcoming {
+      background: rgba(79,142,247,0.12);
+      color: var(--accent);
+    }
+
+    .result-badge.today {
+      background: rgba(245,200,66,0.12);
+      color: var(--gold);
+      animation: pulse 1.5s infinite;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .sidebar-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .orange-cap-row, .purple-cap-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .cap-rank {
+      width: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .cap-icon {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .cap-info { flex: 1; }
+    .cap-name { font-size: 13px; font-weight: 500; }
+    .cap-team { font-size: 11px; color: var(--muted); }
+    .cap-stat { font-size: 14px; font-weight: 700; color: var(--gold); }
+
+    /* ── Featured match ── */
+    .featured-match {
+      background: linear-gradient(135deg, rgba(79,142,247,0.15), rgba(79,142,247,0.05));
+      border: 1px solid rgba(79,142,247,0.25);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .featured-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .featured-teams {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .featured-team {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .featured-team-icon {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800;
+    }
+
+    .featured-team-name { font-size: 13px; font-weight: 600; }
+
+    .featured-vs {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .featured-info {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 24px;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── Deployed badge ── */
+    .deploy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .deploy-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-badge">IPL</span>
+    <span>2026 Dashboard</span>
+  </div>
+  <div class="live-pill">
+    <span class="live-dot"></span>
+    Season Live · Match 1
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Featured match today -->
+  <div class="featured-match">
+    <div class="featured-label">Today's Opener · Match 1 · M. Chinnaswamy Stadium, Bengaluru</div>
+    <div class="featured-teams">
+      <div class="featured-team">
+        <div class="featured-team-icon" style="background:#e6001a;color:#fff">RCB</div>
+        <div class="featured-team-name">Royal Challengers Bengaluru</div>
+        <span style="font-size:11px;color:#f5c842;font-weight:600">🏆 Defending Champions</span>
+      </div>
+      <div class="featured-vs">VS</div>
+      <div class="featured-team">
+        <div class="featured-team-icon" style="background:#ff822a;color:#fff">SRH</div>
+        <div class="featured-team-name">Sunrisers Hyderabad</div>
+        <span style="font-size:11px;color:var(--muted)"></span>
+      </div>
+    </div>
+    <div class="featured-info">28 March 2026 · 7:30 PM IST</div>
+  </div>
+
+  <div class="grid">
+    <!-- Main content -->
+    <div>
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('points')">Points Table</button>
+        <button class="tab" onclick="showTab('fixtures')">Fixtures</button>
+        <button class="tab" onclick="showTab('results')">Results</button>
+      </div>
+
+      <!-- Points Table -->
+      <div id="tab-points" class="panel active">
+        <p class="section-title">2026 Standings · After Match 1</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:28px">#</th>
+                <th>Team</th>
+                <th>M</th>
+                <th>W</th>
+                <th>L</th>
+                <th>NR</th>
+                <th>NRR</th>
+                <th>Pts</th>
+              </tr>
+            </thead>
+            <tbody id="standings-body"></tbody>
+          </table>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:10px;">
+          Top 4 teams qualify for playoffs. Updated after each match.
+        </p>
+      </div>
+
+      <!-- Fixtures -->
+      <div id="tab-fixtures" class="panel">
+        <p class="section-title">Upcoming Matches · Phase 1</p>
+        <div id="fixtures-list"></div>
+      </div>
+
+      <!-- Results -->
+      <div id="tab-results" class="panel">
+        <p class="section-title">Completed Matches</p>
+        <div id="results-list"></div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+      <!-- Orange Cap -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">
+          🧡 Orange Cap
+          <span style="font-size:11px;color:var(--muted);font-weight:400">Most Runs</span>
+        </div>
+        <div id="orange-cap"></div>
+      </div>
+
+      <!-- Purple Cap -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">
+          💜 Purple Cap
+          <span style="font-size:11px;color:var(--muted);font-weight:400">Most Wickets</span>
+        </div>
+        <div id="purple-cap"></div>
+      </div>
+
+      <!-- Quick facts -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">Season at a Glance</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--surface);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--accent)">74</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Total Matches</div>
+          </div>
+          <div style="background:var(--surface);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--accent)">10</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Teams</div>
+          </div>
+          <div style="background:var(--surface);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--gold)">1</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Played</div>
+          </div>
+          <div style="background:var(--surface);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--green)">31 May</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Final</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>Built by Adarsh Malshetty · Deployed via <strong>Azure DevOps Pipeline</strong> to <strong>Azure Static Web Apps</strong></div>
+  <div class="deploy-badge" style="margin:6px auto;width:fit-content">
+    <span class="deploy-dot"></span>
+    Auto-deployed on push to main · pipeline/azure-pipelines.yml
+  </div>
+  <div style="margin-top:8px">Data sourced from <a href="https://www.iplt20.com" target="_blank">iplt20.com</a></div>
+</footer>
+
+<script>
+const teams = [
+  { short: "RCB", name: "Royal Challengers Bengaluru", color: "#e6001a", bg: "#e6001a",  m:1, w:1, l:0, nr:0, nrr:+1.250, pts:2 },
+  { short: "MI",  name: "Mumbai Indians",               color: "#004ba0", bg: "#004ba0",  m:0, w:0, l:0, nr:0, nrr:0.000,  pts:0 },
+  { short: "CSK", name: "Chennai Super Kings",           color: "#f5c842", bg: "#f5c842",  m:0, w:0, l:0, nr:0, nrr:0.000,  pts:0 },
+  { short: "KKR", name: "Kolkata Knight Riders",         color: "#3a225d", bg: "#3a225d",  m:0, w:0, l:0, nr:0, nrr:0.000,  pts:0 },
+  { short: "DC",  name: "Delhi Capitals",                color: "#0078bc", bg: "#0078bc",  m:0, w:0, l:0, nr:0, nrr:0.000,  pts:0 },
+  { short: "GT",  name: "Gujarat Titans",                color: "#1c1c6e", bg: "#1c1c6e",  m:0, w:0, l:0, nr:0, nrr:0.000,  pts:0 },
+  { short: "RR",  name: "Rajasthan Royals",              color: "#ea1a85", bg: "#ea1a85",  m:0, w:0, l:0, nr:0, nrr:0.000,  pts:0 },
+  { short: "PBKS",name: "Punjab Kings",                  color: "#d71920", bg: "#d71920",  m:0, w:0, l:0, nr:0, nrr:0.000,  pts:0 },
+  { short: "LSG", name: "Lucknow Super Giants",          color: "#a72b2a", bg: "#a72b2a",  m:0, w:0, l:0, nr:0, nrr:0.000,  pts:0 },
+  { short: "SRH", name: "Sunrisers Hyderabad",           color: "#ff822a", bg: "#ff822a",  m:1, w:0, l:1, nr:0, nrr:-1.250, pts:0 },
+];
+
+const fixtures = [
+  { match:2, date:"29 Mar", time:"7:30 PM", t1:"MI",  t2:"KKR",  venue:"Wankhede Stadium, Mumbai",        status:"upcoming" },
+  { match:3, date:"30 Mar", time:"7:30 PM", t1:"CSK", t2:"RR",   venue:"Barsapara Stadium, Guwahati",     status:"upcoming" },
+  { match:4, date:"31 Mar", time:"7:30 PM", t1:"PBKS",t2:"GT",   venue:"PCA Stadium, New Chandigarh",     status:"upcoming" },
+  { match:5, date:"1 Apr",  time:"7:30 PM", t1:"DC",  t2:"LSG",  venue:"Arun Jaitley Stadium, Delhi",     status:"upcoming" },
+  { match:6, date:"2 Apr",  time:"7:30 PM", t1:"RCB", t2:"KKR",  venue:"M. Chinnaswamy Stadium, Bengaluru",status:"upcoming"},
+  { match:7, date:"3 Apr",  time:"7:30 PM", t1:"SRH", t2:"CSK",  venue:"Rajiv Gandhi Stadium, Hyderabad", status:"upcoming" },
+  { match:8, date:"4 Apr",  time:"3:30 PM", t1:"DC",  t2:"MI",   venue:"Arun Jaitley Stadium, Delhi",     status:"upcoming" },
+  { match:9, date:"4 Apr",  time:"7:30 PM", t1:"GT",  t2:"RR",   venue:"Narendra Modi Stadium, Ahmedabad",status:"upcoming" },
+];
+
+const results = [
+  { match:1, date:"28 Mar", t1:"RCB", t2:"SRH", venue:"M. Chinnaswamy Stadium, Bengaluru", result:"RCB won", status:"won" },
+];
+
+const orangeCap = [
+  { name:"Virat Kohli",    team:"RCB",  runs:72, icon:"VK", color:"#e6001a" },
+  { name:"To be updated",  team:"—",    runs:0,  icon:"—",  color:"#333" },
+];
+
+const purpleCap = [
+  { name:"Josh Hazlewood", team:"RCB",  wkts:3, icon:"JH", color:"#e6001a" },
+  { name:"To be updated",  team:"—",    wkts:0, icon:"—",  color:"#333" },
+];
+
+// Render standings
+function renderStandings() {
+  const sorted = [...teams].sort((a,b) => b.pts - a.pts || b.nrr - a.nrr);
+  const tbody = document.getElementById("standings-body");
+  tbody.innerHTML = sorted.map((t, i) => {
+    const qualify = i < 4 ? 'class="qualifier"' : '';
+    const nrrClass = t.nrr > 0 ? "nrr-pos" : t.nrr < 0 ? "nrr-neg" : "";
+    const nrrStr = t.nrr > 0 ? "+" + t.nrr.toFixed(3) : t.nrr.toFixed(3);
+    const qualBadge = i < 4 ? '<span class="qualifier-badge">Q</span>' : '';
+    return `<tr ${qualify}>
+      <td><span class="pos">${i+1}</span></td>
+      <td>
+        <div class="team-cell">
+          <div class="team-icon" style="background:${t.bg}22;color:${t.color}">${t.short.slice(0,2)}</div>
+          <div>
+            <div class="team-name">${t.short}${qualBadge}</div>
+            <div class="team-short">${t.name}</div>
+          </div>
+        </div>
+      </td>
+      <td>${t.m}</td>
+      <td>${t.w}</td>
+      <td>${t.l}</td>
+      <td>${t.nr}</td>
+      <td class="${nrrClass}">${nrrStr}</td>
+      <td class="pts-bold">${t.pts}</td>
+    </tr>`;
+  }).join("");
+}
+
+// Render fixtures
+function renderFixtures() {
+  const el = document.getElementById("fixtures-list");
+  el.innerHTML = fixtures.map(f => `
+    <div class="match-card">
+      <div class="match-meta">
+        <span class="match-num">Match ${f.match}</span>
+        <span class="result-badge upcoming">Upcoming</span>
+      </div>
+      <div class="match-teams">
+        <div class="match-team">
+          <div class="team-icon" style="background:${getTeam(f.t1).bg}22;color:${getTeam(f.t1).color};width:32px;height:32px">${f.t1.slice(0,2)}</div>
+          <span>${f.t1}</span>
+        </div>
+        <span class="vs-badge">${f.date} · ${f.time}</span>
+        <div class="match-team right">
+          <div class="team-icon" style="background:${getTeam(f.t2).bg}22;color:${getTeam(f.t2).color};width:32px;height:32px">${f.t2.slice(0,2)}</div>
+          <span>${f.t2}</span>
+        </div>
+      </div>
+      <div class="match-venue">📍 ${f.venue}</div>
+    </div>`).join("");
+}
+
+// Render results
+function renderResults() {
+  const el = document.getElementById("results-list");
+  el.innerHTML = results.map(r => `
+    <div class="match-card">
+      <div class="match-meta">
+        <span class="match-num">Match ${r.match} · ${r.date}</span>
+        <span class="result-badge won">${r.result}</span>
+      </div>
+      <div class="match-teams">
+        <div class="match-team">
+          <div class="team-icon" style="background:${getTeam(r.t1).bg}22;color:${getTeam(r.t1).color};width:32px;height:32px">${r.t1.slice(0,2)}</div>
+          <span>${r.t1}</span>
+        </div>
+        <span class="vs-badge">vs</span>
+        <div class="match-team right">
+          <div class="team-icon" style="background:${getTeam(r.t2).bg}22;color:${getTeam(r.t2).color};width:32px;height:32px">${r.t2.slice(0,2)}</div>
+          <span>${r.t2}</span>
+        </div>
+      </div>
+      <div class="match-venue">📍 ${r.venue}</div>
+    </div>`).join("");
+}
+
+// Render caps
+function renderCaps() {
+  document.getElementById("orange-cap").innerHTML = orangeCap.map((p,i) => `
+    <div class="orange-cap-row">
+      <span class="cap-rank">${i+1}</span>
+      <div class="cap-icon" style="background:${p.color}22;color:${p.color}">${p.icon}</div>
+      <div class="cap-info">
+        <div class="cap-name">${p.name}</div>
+        <div class="cap-team">${p.team}</div>
+      </div>
+      <div class="cap-stat">${p.runs > 0 ? p.runs + " runs" : "—"}</div>
+    </div>`).join("");
+
+  document.getElementById("purple-cap").innerHTML = purpleCap.map((p,i) => `
+    <div class="purple-cap-row">
+      <span class="cap-rank">${i+1}</span>
+      <div class="cap-icon" style="background:${p.color}22;color:${p.color}">${p.icon}</div>
+      <div class="cap-info">
+        <div class="cap-name">${p.name}</div>
+        <div class="cap-team">${p.team}</div>
+      </div>
+      <div class="cap-stat">${p.wkts > 0 ? p.wkts + " wkts" : "—"}</div>
+    </div>`).join("");
+}
+
+function getTeam(short) {
+  return teams.find(t => t.short === short) || { bg:"#444", color:"#fff" };
+}
+
+function showTab(id) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("tab-" + id).classList.add("active");
+  event.target.classList.add("active");
+}
+
+renderStandings();
+renderFixtures();
+renderResults();
+renderCaps();
+</script>
+</body>
+</html>

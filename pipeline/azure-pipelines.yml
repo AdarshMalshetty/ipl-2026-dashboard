@@ -1,0 +1,48 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - index.html
+      - staticwebapp.config.json
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  # Set this in Azure DevOps pipeline variables (mark as secret)
+  # Name: azureStaticWebAppsApiToken
+  appLocation: '/'       # Root of the repo
+  outputLocation: '/'    # Static files are at root (index.html)
+
+stages:
+
+- stage: Build_And_Deploy
+  displayName: 'Build & Deploy to Azure Static Web Apps'
+  jobs:
+  - job: Deploy
+    displayName: 'Deploy IPL Dashboard'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - checkout: self
+
+    - task: AzureStaticWebApp@0
+      displayName: 'Deploy to Azure Static Web Apps'
+      inputs:
+        app_location: $(appLocation)
+        output_location: $(outputLocation)
+        azure_static_web_apps_api_token: $(azureStaticWebAppsApiToken)
+
+    - script: |
+        echo "========================================="
+        echo "  IPL 2026 Dashboard - Deployment Done"
+        echo "  Branch : $(Build.SourceBranchName)"
+        echo "  Commit : $(Build.SourceVersion)"
+        echo "  Time   : $(date '+%Y-%m-%d %H:%M:%S')"
+        echo "========================================="
+      displayName: 'Print Deployment Summary'
