@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-      - main
+      - Main
   paths:
     include:
       - index.html
@@ -10,7 +10,7 @@ trigger:
 pr:
   branches:
     include:
-      - main
+      - Main
 
 stages:
 
