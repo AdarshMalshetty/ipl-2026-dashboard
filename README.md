@@ -1,76 +1,146 @@
 # IPL 2026 Dashboard
 
-A live IPL 2026 points table and fixtures dashboard — deployed automatically to **Azure Static Web Apps** via **Azure DevOps Pipelines** on every push to `main`.
+> Live points table, fixtures, and results for the 2026 Indian Premier League — automatically deployed to **Azure Static Web Apps** via **Azure DevOps Pipelines** on every push to `main`.
 
-🔗 **Live URL:** *(your Azure Static Web Apps URL here)*
+🔗 **[Live Demo → black-tree-0f9e5e710.1.azurestaticapps.net](https://black-tree-0f9e5e710.1.azurestaticapps.net)**
+
+![Azure Static Web Apps](https://img.shields.io/badge/Azure-Static%20Web%20Apps-0078D4?logo=microsoftazure&logoColor=white)
+![Azure DevOps](https://img.shields.io/badge/Azure%20DevOps-Pipeline-0078D4?logo=azuredevops&logoColor=white)
+![Deploy](https://img.shields.io/badge/deploy-auto%20on%20push-34d399)
 
 ---
 
-## What It Shows
+## What It Does
 
-- **Points Table** — live standings with NRR, wins, losses, and playoff qualification status
-- **Fixtures** — upcoming matches with venues and times
+A clean, dark-themed dashboard tracking the IPL 2026 season:
+
+- **Points Table** — live standings with NRR, wins, losses, and playoff qualification zones
+- **Fixtures** — upcoming matches with venues, dates, and times
 - **Results** — completed match outcomes
 - **Orange & Purple Cap** — leading run-scorer and wicket-taker
+- **Season stats** — matches played, teams, and final date
 
-## How It's Deployed
+---
+
+## Architecture
 
 ```
-Push to main (index.html updated)
-        │
-        ▼
+Developer pushes to main (GitHub)
+           │
+           ▼
 Azure DevOps Pipeline triggers
-        │
-        ▼
-AzureStaticWebApp@0 task runs
-        │
-        ▼
-Live on Azure Static Web Apps
-   in under 2 minutes
+           │
+           ▼
+Self-hosted agent runs SWA CLI
+           │
+           ▼
+Deployed to Azure Static Web Apps
+           │
+           ▼
+Live at azurestaticapps.net in ~60s
 ```
 
-The pipeline is defined in `/pipeline/azure-pipelines.yml`. Every time standings or fixtures are updated and pushed to `main`, the site redeploys automatically — no manual steps.
+### Planned Extension — Real-Time Data Pipeline
 
-## Setup
+```
+Azure Function (timer trigger, every 30 mins)
+           │
+           ▼
+Cricket API (CricAPI)
+           │
+           ▼
+Azure Blob Storage (data.json, public read)
+           │
+           ▼
+index.html fetches on load + polls every 5 mins
+           │
+           ▼
+Dashboard updates automatically during live matches
+```
 
-### 1 — Create Azure Static Web App
-1. Go to [portal.azure.com](https://portal.azure.com)
-2. Search **Static Web Apps** → Create
-3. Select **Free** tier
-4. Source: **Other** (we'll deploy via Azure DevOps, not GitHub Actions)
-5. Once created, go to **Manage deployment token** and copy the token
-
-### 2 — Add the token to Azure DevOps
-1. Open your Azure DevOps pipeline → **Edit → Variables**
-2. Add variable: `azureStaticWebAppsApiToken`
-3. Paste the token — mark it as **secret**
-
-### 3 — Create the pipeline
-1. Azure DevOps → **Pipelines → New Pipeline**
-2. Source: **GitHub** → select this repo
-3. Choose **Existing Azure Pipelines YAML file**
-4. Select `/pipeline/azure-pipelines.yml`
-5. Save and run
-
-### 4 — Push any change to trigger a deploy
-Update the points table data in `index.html` after each match and push — the pipeline redeploys automatically.
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | HTML, CSS, Vanilla JS (no framework, no build step) |
+| Frontend | HTML, CSS, Vanilla JS — no framework, no build step |
 | Hosting | Azure Static Web Apps (Free tier) |
-| CI/CD | Azure DevOps Pipelines |
+| CI/CD | Azure DevOps Pipelines (self-hosted agent) |
+| Deployment | Azure Static Web Apps CLI |
 | Source control | GitHub |
 
-## Project Structure
+---
+
+## Repo Structure
 
 ```
 ipl-2026-dashboard/
-├── index.html                  # The entire app — points table, fixtures, results
+├── index.html                  # Entire app — standings, fixtures, results, caps
 ├── staticwebapp.config.json    # Azure SWA routing config
 ├── pipeline/
-│   └── azure-pipelines.yml     # Deploy to Azure Static Web Apps on push
+│   └── azure-pipelines.yml     # CI/CD pipeline definition
 └── README.md
 ```
+
+---
+
+## CI/CD Pipeline
+
+The pipeline (`/pipeline/azure-pipelines.yml`) does three things on every push to `main`:
+
+1. **Checkout** — pulls latest code from GitHub
+2. **Install SWA CLI** — `npm install -g @azure/static-web-apps-cli`
+3. **Deploy** — pushes static files to Azure Static Web Apps using a secret deployment token
+
+The deployment token is stored as an encrypted pipeline variable in Azure DevOps — never in source code.
+
+---
+
+## Setup (Run It Yourself)
+
+### Prerequisites
+- Azure free account — [portal.azure.com](https://portal.azure.com)
+- Azure DevOps organisation — [dev.azure.com](https://dev.azure.com)
+
+### Step 1 — Create an Azure Static Web App
+1. Azure Portal → **Static Web Apps** → **Create**
+2. Plan: **Free**, Source: **Other**
+3. Once created → **Manage deployment token** → copy the token
+
+### Step 2 — Create the pipeline
+1. Azure DevOps → **Pipelines** → **New Pipeline**
+2. Source: **GitHub** → select this repo
+3. Choose **Existing Azure Pipelines YAML file** → `/pipeline/azure-pipelines.yml`
+4. Add variable: `azureStaticWebAppsApiToken` → paste token → mark as **secret**
+5. Save and run
+
+### Step 3 — Update scores
+Edit the data arrays in `index.html` after each match and push to `main`. The pipeline redeploys automatically in ~60 seconds.
+
+---
+
+## Updating the Dashboard
+
+Points table and match data live as JavaScript arrays at the top of `index.html`:
+
+```javascript
+const teams = [
+  { short:"RCB", name:"Royal Challengers Bengaluru", m:1, w:1, l:0, nr:0, nrr:+1.250, pts:2 },
+  // update after each match
+];
+
+const results = [
+  { num:1, date:"28 Mar", t1:"RCB", t2:"SRH", result:"RCB won", venue:"M. Chinnaswamy Stadium" },
+  // add each completed match here
+];
+```
+
+---
+
+## Built By
+
+**Adarsh Malshetty** — DevOps Engineer  
+[LinkedIn](https://www.linkedin.com/in/adarsh-malshetty/) · [GitHub](https://github.com/AdarshMalshetty)
+
+*Built during IPL 2026 season opener weekend to demonstrate Azure Static Web Apps and Azure DevOps Pipelines.*
